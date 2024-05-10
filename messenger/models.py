@@ -28,17 +28,15 @@ class CodeGenerate(models.Model):
 class Group(CodeGenerate):
     name = models.CharField(max_length=100)
     admin = models.ForeignKey(User, on_delete=models.CASCADE)
-    members = models.ManyToManyField(User,related_name='member_groups', blank=True)
+    members = models.ManyToManyField(User, related_name='member_groups', blank=True)
 
 
     def __str__(self):
         return self.name
     
-    # def save(self, *args, **kwargs):
-    #     if self.admin not in self.members:
-    #         self.members.add(self.admin.id)
-    #     super(Group, self).save(*args, **kwargs)
-    # def save(selbup, self).save(*args, **kwargs)
+    def save(self, *args, **kwargs):
+            super(Group, self).save(*args, **kwargs)
+            self.members.add(self.admin)
 
 class JoinRequest(CodeGenerate):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -49,6 +47,15 @@ class JoinRequest(CodeGenerate):
     def __str__(self):
         return f"Join request from {self.user.username} to {self.group.name}"
 
+
+    def save(self, *args, **kwargs):
+        join_request = JoinRequest.objects.filter(
+            user=self.user, 
+            group=self.group,
+            is_active=True
+            ).count()
+        if not join_request:
+            super(JoinRequest,self).save(*args, **kwargs)
 class Message(CodeGenerate):
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
     sender = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -57,4 +64,9 @@ class Message(CodeGenerate):
 
     def __str__(self):
         return f"{self.sender.username} ({self.time}): {self.content[:50]}..."
+
+    
+    def save(self, *args, **kwargs):
+        if self.sender in self.group.members.all():
+            super(Message, self).save(*args, **kwargs)
 

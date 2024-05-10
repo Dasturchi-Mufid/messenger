@@ -7,7 +7,6 @@ urlpatterns = [
     path('login/', views.user_login, name='login'),
     path('logout/', views.user_logout, name='logout'),
     path('search/', views.search_group, name='search'),
-    path('join-request/<str:code>/delete/', views.delete_join_request, name='delete_join_request'),
     path('join-requests/<str:code>/accept/', views.accept_join_request, name='accept_join_request'),
     path('groups/', views.group_list, name='group_list'),
     path('groups/create/', views.create_group, name='create_group'),

@@ -32,7 +32,6 @@ def create_group(request):
     if request.method == 'POST':
         group_name = request.POST.get('group_name')
         group = models.Group.objects.create(name=group_name, admin=request.user)
-        group.members.add(request.user)
         return redirect('group_list')
     return render(request, 'create_group.html')
 
@@ -53,13 +52,10 @@ def send_join_request(request, code):
 
 @login_required(login_url='login')
 def accept_join_request(request, code):
-    group = models.JoinRequest.objects.get(code=code).group
-    if request.user.is_authenticated and request.user == group.admin:
-        join_request = get_object_or_404(models.JoinRequest, code=code)
-        join_request.accepted = True
-        join_request.is_active = False
-        join_request.save()
-        group.members.add(join_request.user)
+    join_request = get_object_or_404(models.JoinRequest, code=code)
+    if request.user == join_request.group.admin:
+        join_request.group.members.add(join_request.user)
+        join_request.delete()
         return redirect('group_list')
     else:
         return render(request, 'error/join_request.html')
@@ -71,13 +67,6 @@ def leave_group(request, code):
     return redirect('group_list')
 
 
-@login_required(login_url='login')
-def delete_join_request(request, code):
-    join_request = models.JoinRequest.objects.get(code=code)
-    if request.user.is_authenticated and request.user == join_request.group.admin:
-        join_request.is_active = False
-        join_request.save()
-        return redirect('index')
 
 @login_required(login_url='login')
 def send_message(request, code):

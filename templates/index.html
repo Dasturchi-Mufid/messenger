@@ -21,7 +21,6 @@
         <li>
             Group: {{request.group.name}} User: {{request.user.username}}
             <a href="{% url 'accept_join_request' request.code %}">Accept</a>
-            <a href="{% url 'delete_join_request' request.code %}">Delete</a>
         </li>
         {% endfor %}
     </ul>
